@@ -82,7 +82,9 @@ module user_project_wrapper #(
 /* User project is instantiated  here   */
 /*--------------------------------------*/
 
-user_proj_example mprj (
+
+
+bqmain bqmain_module (
 `ifdef USE_POWER_PINS
 	.vccd1(vccd1),	// User area 1 1.8V power
 	.vssd1(vssd1),	// User area 1 digital ground
@@ -93,29 +95,24 @@ user_proj_example mprj (
 
     // MGMT SoC Wishbone Slave
 
-    .wbs_cyc_i(wbs_cyc_i),
-    .wbs_stb_i(wbs_stb_i),
-    .wbs_we_i(wbs_we_i),
-    .wbs_sel_i(wbs_sel_i),
-    .wbs_adr_i(wbs_adr_i),
-    .wbs_dat_i(wbs_dat_i),
-    .wbs_ack_o(wbs_ack_o),
-    .wbs_dat_o(wbs_dat_o),
+    .wb_cyc_i(wbs_cyc_i),
+    .wb_stb_i(wbs_stb_i),
+    .wb_we_i(wbs_we_i),
+    .wb_sel_i(wbs_sel_i),
+    .wb_adr_i(wbs_adr_i),
+    .wb_dat_i(wbs_dat_i),
+    .wb_ack_o(wbs_ack_o),
+    .wb_dat_o(wbs_dat_o),
 
-    // Logic Analyzer
-
-    .la_data_in(la_data_in),
-    .la_data_out(la_data_out),
-    .la_oenb (la_oenb),
+    //.valid_i(1'b1),
+    //.nreset(1'b1),
 
     // IO Pads
+    .bq_clk_i(user_clock2),
+    .x({io_in[23:16],8'b0}),
+    .y_o(io_out[15:8]),
+    .io_oeb(io_oeb[15:8])
 
-    .io_in (io_in),
-    .io_out(io_out),
-    .io_oeb(io_oeb),
-
-    // IRQ
-    .irq(user_irq)
 );
 
 endmodule	// user_project_wrapper
