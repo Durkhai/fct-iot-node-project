@@ -28,6 +28,10 @@
  *
  *-------------------------------------------------------------
  */
+ 
+`ifndef MPRJ_IO_PADS
+`define MPRJ_IO_PADS 38
+`endif
 
 module user_project_wrapper #(
     parameter BITS = 32
@@ -83,8 +87,7 @@ module user_project_wrapper #(
 /*--------------------------------------*/
 
 
-
-bqmain bqmain_module (
+bqmain bqmain0 (
 `ifdef USE_POWER_PINS
 	.vccd1(vccd1),	// User area 1 1.8V power
 	.vssd1(vssd1),	// User area 1 digital ground
@@ -98,22 +101,22 @@ bqmain bqmain_module (
     .wb_cyc_i(wbs_cyc_i),
     .wb_stb_i(wbs_stb_i),
     .wb_we_i(wbs_we_i),
-    .wb_sel_i(wbs_sel_i),
     .wb_adr_i(wbs_adr_i),
     .wb_dat_i(wbs_dat_i),
     .wb_ack_o(wbs_ack_o),
     .wb_dat_o(wbs_dat_o),
 
-    //.valid_i(1'b1),
-    //.nreset(1'b1),
+    .valid_i(1'b1),
+    .nreset(la_data_in[16]),
 
     // IO Pads
     .bq_clk_i(user_clock2),
-    .x({io_in[23:16],8'b0}),
-    .y_o(io_out[15:8]),
-    .io_oeb(io_oeb[15:8])
+    .x(la_data_in[35:20]),
+    .y(la_data_out[15:0])
 
 );
+
+
 
 endmodule	// user_project_wrapper
 

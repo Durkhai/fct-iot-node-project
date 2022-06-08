@@ -13,7 +13,7 @@
 /*      Addr	register							     							 */
 /*		0x0		a11								    								 */
 /*		0x1		a12								   									 */
-/*  	0x2		b10								     								 */
+/*  		0x2		b10								     								 */
 /*		0x3		b11								   								     */
 /*		0x4		b12								     								 */
 /*                                                                                   */
@@ -26,45 +26,31 @@
 
 
 
-module coefio
-	(
-	clk_i,
-	rst_i,
-	we_i,	
-	stb_i,
-	cyc_i,
-	ack_o,
-	dat_i,
-	dat_o,
-	adr_i,
-	a11,
-	a12,
-	b10,
-	b11,
-	b12,
-	x, 
-	y
+module coefio #(
+	parameter	DATAWIDTH = 16
+)
+	(    
+`ifdef USE_POWER_PINS
+	inout vccd1,
+	inout vssd1,
+`endif 
+	input	clk_i,
+	input	rst_i,
+	input	we_i,	
+	input	stb_i,
+	input	cyc_i,
+	output	ack_o,
+	input	[31:0]	dat_i,
+	output	[31:0]	dat_o,
+	input	[31:0]	adr_i,
+	output	[31:0]	a11,
+	output	[31:0]	a12,
+	output	[31:0]	b10,
+	output	[31:0]	b11,
+	output	[31:0]	b12,
+	input   [DATAWIDTH-1:0]	x, 
+	input   [DATAWIDTH-1:0]	y
 	);
-
-parameter	DATAWIDTH = 16;
-
-input 		clk_i;
-input 		rst_i;
-input		we_i;
-input		stb_i;
-input 		cyc_i;
-output		ack_o;
-input	[31:0]	dat_i;
-output	[31:0]	dat_o;
-input	[3:0]	adr_i;
-output	[31:0]	a11;
-output	[31:0]	a12;
-output	[31:0]	b10;
-output	[31:0]	b11;
-output	[31:0]	b12;
-input   [DATAWIDTH-1:0]   x;
-input   [DATAWIDTH-1:0]   y;
-
 
 reg	[31:0]	a11;
 reg	[31:0]	a12;
@@ -82,6 +68,7 @@ wire		sel_b12;
 wire        sel_y;
 wire        sel_x;
 
+/*
 assign sel_a11 = (adr_i == 4'b0000);  
 assign sel_a12 = (adr_i == 4'b0001);
 assign sel_b10 = (adr_i == 4'b0010);
@@ -89,7 +76,15 @@ assign sel_b11 = (adr_i == 4'b0011);
 assign sel_b12 = (adr_i == 4'b0100);
 assign sel_x   = (adr_i == 4'b0101);
 assign sel_y   = (adr_i == 4'b0111);
+*/
 
+assign sel_a11 = (adr_i == 4'h30000000);  
+assign sel_a12 = (adr_i == 4'h30000004);
+assign sel_b10 = (adr_i == 4'h30000008);
+assign sel_b11 = (adr_i == 4'h3000000c);
+assign sel_b12 = (adr_i == 4'h30000010);
+assign sel_x   = (adr_i == 4'h30000014);
+assign sel_y   = (adr_i == 4'h30000018);
 
 assign ack_o = stb_i;
 

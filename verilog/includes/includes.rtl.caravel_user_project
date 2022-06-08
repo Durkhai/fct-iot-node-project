@@ -1,5 +1,9 @@
 # Caravel user project includes
 -v $(USER_PROJECT_VERILOG)/rtl/user_project_wrapper.v	     
--v $(USER_PROJECT_VERILOG)/rtl/user_proj_example.v
+-v $(USER_PROJECT_VERILOG)/rtl/biquad/bqmain.v
+-v $(USER_PROJECT_VERILOG)/rtl/biquad/biquad.v
+-v $(USER_PROJECT_VERILOG)/rtl/biquad/coefio.v
+-v $(USER_PROJECT_VERILOG)/rtl/biquad/multa.v
+-v $(USER_PROJECT_VERILOG)/rtl/biquad/multb.v
 
  

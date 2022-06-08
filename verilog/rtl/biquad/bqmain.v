@@ -38,7 +38,10 @@
 
 
 
-module bqmain
+module bqmain #(
+	parameter	DATAWIDTH = 16,
+	parameter	COEFWIDTH = 16
+	)
 	(
     `ifdef USE_POWER_PINS
 		inout vccd1,
@@ -56,36 +59,25 @@ module bqmain
 	input	valid_i,		
 	input	nreset,		/* active low asynchronous reset for filter block */
 	input	[DATAWIDTH-1:0]	x,
-	output	[7:0]	y_o,
-	input	wb_cyc_i,
-	input	[3:0]	wb_sel_i,
-	output	wb_err_o,
-	output	wb_inta_o,
-	output	[7:0]	io_oeb
+	output	wire [DATAWIDTH-1:0]	y,
+	input	wb_cyc_i
 	);
 	
-	parameter	DATAWIDTH = 16;
-	parameter	COEFWIDTH = 16;
-
-assign io_oeb = 8'b0;
-
-assign y_o = y[15:8];
 
 wire	[31:0]	a11;
 wire	[31:0]	a12;
 wire	[31:0]	b10;
 wire	[31:0]	b11;
 wire	[31:0]	b12;
-wire	[15:0] y;
 
 
 /* Filter module */
 biquad biquadi
 	(
 	.clk(bq_clk_i),				/* clock */
-	.nreset(1'b1),			/* active low reset */
+	.nreset(nreset),			/* active low reset */
 	.x(x),						/* data input */
-	.valid(1'b1),				/* input data valid */
+	.valid(valid_i),				/* input data valid */
 	.a11(a11[COEFWIDTH-1:0]),		/* filter pole coefficient */
 	.a12(a12[COEFWIDTH-1:0]),		/* filter pole coefficient */
 	.b10(b10[COEFWIDTH-1:0]),		/* filter zero coefficient */
@@ -98,14 +90,14 @@ biquad biquadi
 coefio coefioi
 	(
 	.clk_i(wb_clk_i),
-	.rst_i(1'b0),
+	.rst_i(wb_rst_i),
 	.we_i(wb_we_i),	
 	.stb_i(wb_stb_i),
 	.cyc_i(wb_cyc_i),
 	.ack_o(wb_ack_o),
 	.dat_i(wb_dat_i[31:0]),
-	.dat_o({wb_dat_o[31:0]}),
-	.adr_i(wb_adr_i[5:2]),
+	.dat_o(wb_dat_o[31:0]),
+	.adr_i(wb_adr_i[31:0]),
 	.a11(a11),
 	.a12(a12),
 	.b10(b10),

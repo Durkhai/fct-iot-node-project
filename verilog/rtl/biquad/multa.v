@@ -8,27 +8,16 @@
 /* ********************************************************************************* */
 
 
-module multa
+module multa #(
+	parameter	DATAWIDTH = 16,
+	parameter	COEFWIDTH = 16 
+)
 	(
-	clk,			/* clock */
-	nreset,			/* active low reset */
-	a,			/* data input */
-	b,			/* input data valid */
-	r			/* filter pole coefficient */
+	input	[COEFWIDTH-2:0]		a,			/* data input */
+	input	[DATAWIDTH+2:0]		b,			/* input data valid */
+	output	[DATAWIDTH + COEFWIDTH + 1:0]	p			/* filter pole coefficient */
 	);
 
-
-parameter	DATAWIDTH = 16;
-parameter	COEFWIDTH = 16;
-
-input 					clk;
-input 					nreset;
-input	[COEFWIDTH-2:0]			a;
-input	[DATAWIDTH+2:0]			b;
-output	[DATAWIDTH + COEFWIDTH + 1:0]	r;
-
-
-assign r = a*b;
-
+assign p = a*b;
 
 endmodule

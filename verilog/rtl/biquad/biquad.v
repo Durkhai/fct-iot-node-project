@@ -23,36 +23,30 @@
 /*                                                                                   */
 /* ********************************************************************************* */
 
-
-module biquad
+`default_nettype none
+module biquad #(
+	parameter	DATAWIDTH = 16,
+	parameter	COEFWIDTH = 16,
+	// Acumulator width is (DATAWIDTH + ACCUM) bits.
+	parameter	ACCUM = 4  // Must be less than or equal to COEFWIDTH-2
+	)
 	(
-	clk,				/* clock */
-	nreset,			/* active low reset */
-	x,				/* data input */
-	valid,			/* input data valid */
-	a11,				/* filter pole coefficient */
-	a12,				/* filter pole coefficient */
-	b10,				/* filter zero coefficient */
-	b11,				/* filter zero coefficient */
-	b12,				/* filter zero coefficient */
-	yout				/* filter output */
+`ifdef USE_POWER_PINS
+	inout vccd1,
+	inout vssd1,
+`endif 
+	input clk,						/* clock */
+	input enable,
+	input nreset,						/* active low reset */
+	input	[DATAWIDTH-1:0] x,				/* data input */
+	input valid,						/* input data valid */
+	input	[COEFWIDTH-1:0] a11,				/* filter pole coefficient */
+	input	[COEFWIDTH-1:0] a12,				/* filter pole coefficient */
+	input	[COEFWIDTH-1:0] b10,				/* filter zero coefficient */
+	input	[COEFWIDTH-1:0] b11,				/* filter zero coefficient */
+	input	[COEFWIDTH-1:0] b12,				/* filter zero coefficient */
+	output reg	[COEFWIDTH-1:0] yout				/* filter output */
 	);
-
-parameter	DATAWIDTH = 16;
-parameter	COEFWIDTH = 16;
-// Acumulator width is (DATAWIDTH + ACCUM) bits.
-parameter	ACCUM = 4;  // Must be less than or equal to COEFWIDTH-2
-
-input 								clk;
-input 								nreset;
-input	[DATAWIDTH-1:0]				x;
-input								valid;
-input	[COEFWIDTH-1:0]				a11;
-input	[COEFWIDTH-1:0]				a12;
-input	[COEFWIDTH-1:0]				b10;
-input	[COEFWIDTH-1:0]				b11;
-input	[COEFWIDTH-1:0]				b12;
-output	[DATAWIDTH-1:0]				yout;
 
 reg		[DATAWIDTH-1:0]				xvalid;
 reg		[DATAWIDTH-1:0]				xm1;
@@ -65,7 +59,7 @@ reg		[DATAWIDTH+3+ACCUM:0]			sumb11reg;
 reg		[DATAWIDTH+3+ACCUM:0]			sumb12reg;
 reg		[DATAWIDTH+3+ACCUM:0]			suma12reg;
 reg		[DATAWIDTH+3:0]				y;
-reg		[DATAWIDTH-1:0]				yout;
+
 
 wire		[COEFWIDTH-1:0]				sa11;
 wire		[COEFWIDTH-1:0]				sa12;
@@ -120,19 +114,19 @@ else
   end
 
 /* Multiply input by filter coefficient b10 */
-multb multb10(.clk(clk),.nreset(nreset),.a(sb10[COEFWIDTH-2:0]),.b(xm1[DATAWIDTH-2:0]),.r(mb10out));
+multb multb10(.a(sb10[COEFWIDTH-2:0]),.b(xm1[DATAWIDTH-2:0]),.p(mb10out));
 
 assign sumb10 = (b10[COEFWIDTH-1] ^ xm1[DATAWIDTH-1]) ? (tempsum2) : ({4'b0000,mb10out[COEFWIDTH+DATAWIDTH-3:COEFWIDTH-2-ACCUM]});
 
 /* Multiply input by filter coefficient b11 */
-multb multb11(.clk(clk),.nreset(nreset),.a(sb11[COEFWIDTH-2:0]),.b(xm3[DATAWIDTH-2:0]),.r(mb11out));
+multb multb11(.a(sb11[COEFWIDTH-2:0]),.b(xm3[DATAWIDTH-2:0]),.p(mb11out));
 
 /* Divide by two and add or subtract */
 assign sumb11 = (b11[COEFWIDTH-1] ^ xm3[DATAWIDTH-1]) ? (sumb10reg - {4'b0000,mb11out[COEFWIDTH+DATAWIDTH-3:COEFWIDTH-2-ACCUM]}) : 
      (sumb10reg + {4'b0000,mb11out[COEFWIDTH+DATAWIDTH-3:COEFWIDTH-2-ACCUM]});
 
 /* Multiply input by filter coefficient b12 */
-multb multb12(.clk(clk),.nreset(nreset),.a(sb12[COEFWIDTH-2:0]),.b(xm5[DATAWIDTH-2:0]),.r(mb12out));
+multb multb12(.a(sb12[COEFWIDTH-2:0]),.b(xm5[DATAWIDTH-2:0]),.p(mb12out));
 
 assign sumb12 = (b12[COEFWIDTH-1] ^ xm5[DATAWIDTH-1]) ? (sumb11reg - {4'b0000,mb12out[COEFWIDTH+DATAWIDTH-3:COEFWIDTH-2-ACCUM]}) : 
      (sumb11reg + {4'b0000,mb12out[COEFWIDTH+DATAWIDTH-3:COEFWIDTH-2-ACCUM]});
@@ -141,13 +135,13 @@ assign sumb12 = (b12[COEFWIDTH-1] ^ xm5[DATAWIDTH-1]) ? (sumb11reg - {4'b0000,mb
 assign sy = y[DATAWIDTH+3] ? (~y + 1) : y;
 
 /* Multiply output by filter coefficient a12 */
-multa multa12(.clk(clk),.nreset(nreset),.a(sa12[COEFWIDTH-2:0]),.b(sy[DATAWIDTH+2:0]),.r(ma12out));
+multa multa12(.a(sa12[COEFWIDTH-2:0]),.b(sy[DATAWIDTH+2:0]),.p(ma12out));
 
 assign suma12 = (a12[COEFWIDTH-1] ^ y[DATAWIDTH+3]) ? (sumb12reg - {1'b0,ma12out[COEFWIDTH+DATAWIDTH:COEFWIDTH-2-ACCUM]}) : 
      (sumb12reg + {1'b0,ma12out[COEFWIDTH+DATAWIDTH:COEFWIDTH-2-ACCUM]});
 
 /* Multiply output by filter coefficient a11 */
-multa multa11(.clk(clk),.nreset(nreset),.a(sa11[COEFWIDTH-2:0]),.b(sy[DATAWIDTH+2:0]),.r(ma11out));
+multa multa11(.a(sa11[COEFWIDTH-2:0]),.b(sy[DATAWIDTH+2:0]),.p(ma11out));
 
 assign suma11 = (a11[COEFWIDTH-1] ^ y[DATAWIDTH+3]) ? (suma12reg - {1'b0,ma11out[COEFWIDTH+DATAWIDTH:COEFWIDTH-2-ACCUM]}) : 
      (suma12reg + {1'b0,ma11out[COEFWIDTH+DATAWIDTH:COEFWIDTH-2-ACCUM]});
@@ -179,3 +173,4 @@ else
 
 
 endmodule
+`default_nettype wire
