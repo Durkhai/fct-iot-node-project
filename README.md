@@ -5,7 +5,11 @@
 | :exclamation: Important Note            |
 |-----------------------------------------|
 
+<<<<<<< HEAD
 A project containing a 16bit biquad filter.
+=======
+Project containing a digital 16bit biquad filter.
+>>>>>>> 29d8a7bba3a6af457b503e16dfcf38e984c7b04b
 
 Refer to [README](docs/source/quickstart.rst) for a quick start of how to use caravel_user_project
 
